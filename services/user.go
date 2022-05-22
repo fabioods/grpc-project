@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"time"
 
 	"github.com/fabioods/fullcyle-grpc/pb"
@@ -66,4 +68,23 @@ func (u *UserService) AddUserVerbose(req *pb.User, stream pb.UserService_AddUser
 	})
 	time.Sleep(time.Second * 3)
 	return nil
+}
+
+func (u *UserService) AddUsers(stream pb.UserService_AddUsersServer) error {
+	users := []*pb.User{}
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.Users{User: users})
+		}
+		if err != nil {
+			log.Fatalf("failed to receive msg: %v", err)
+		}
+		users = append(users, &pb.User{
+			Id:    req.GetId(),
+			Name:  req.GetName(),
+			Email: req.GetEmail(),
+		})
+		fmt.Println("AddUsers ", req.GetName())
+	}
 }

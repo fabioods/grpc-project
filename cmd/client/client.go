@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/fabioods/fullcyle-grpc/pb"
 	"google.golang.org/grpc"
@@ -20,8 +21,8 @@ func main() {
 	client := pb.NewUserServiceClient(connection)
 
 	//AddUser(client)
-	AddUserVerbose(client)
-
+	//AddUserVerbose(client)
+	AddUsers(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -58,4 +59,55 @@ func AddUserVerbose(client pb.UserServiceClient) {
 		}
 		fmt.Println("Status", stream.Status)
 	}
+}
+
+func AddUsers(client pb.UserServiceClient) {
+	reqs := []*pb.User{
+		&pb.User{
+			Id:    "0",
+			Name:  "Fabio",
+			Email: "fah_ds@live.com",
+		},
+		&pb.User{
+			Id:    "1",
+			Name:  "Fabio",
+			Email: "fah_ds@live.com",
+		},
+		&pb.User{
+			Id:    "2",
+			Name:  "Fabio",
+			Email: "fah_ds@live.com",
+		},
+		&pb.User{
+			Id:    "3",
+			Name:  "Fabio",
+			Email: "fah_ds@live.com",
+		},
+		&pb.User{
+			Id:    "4",
+			Name:  "Fabio",
+			Email: "fah_ds@live.com",
+		},
+		&pb.User{
+			Id:    "5",
+			Name:  "Fabio",
+			Email: "fah_ds@live.com",
+		},
+	}
+
+	stream, err := client.AddUsers(context.Background())
+	if err != nil {
+		log.Fatalf("failed to add user: %v", err)
+	}
+
+	for _, req := range reqs {
+		stream.Send(req)
+		time.Sleep(time.Second * 3)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("failed to receive response: %v", err)
+	}
+	fmt.Println(res)
 }
