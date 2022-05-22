@@ -88,3 +88,23 @@ func (u *UserService) AddUsers(stream pb.UserService_AddUsersServer) error {
 		fmt.Println("AddUsers ", req.GetName())
 	}
 }
+
+func (u *UserService) AddUserStreamBoth(stream pb.UserService_AddUserStreamBothServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("failed to receive msg: %v", err)
+		}
+		err = stream.Send(&pb.UserResultStream{
+			Status: "Inserting",
+			User:   req,
+		})
+		if err != nil {
+			log.Fatalf("failed to send msg: %v", err)
+		}
+		fmt.Println("AddUserStreamBot ", req.GetName())
+	}
+}
