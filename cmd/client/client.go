@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/fabioods/fullcyle-grpc/pb"
@@ -18,7 +19,8 @@ func main() {
 
 	client := pb.NewUserServiceClient(connection)
 
-	AddUser(client)
+	//AddUser(client)
+	AddUserVerbose(client)
 
 }
 
@@ -34,4 +36,26 @@ func AddUser(client pb.UserServiceClient) {
 		log.Fatalf("failed to add user: %v", err)
 	}
 	fmt.Println("AddUser ", res)
+}
+
+func AddUserVerbose(client pb.UserServiceClient) {
+	req := &pb.User{
+		Id:    "0",
+		Name:  "Fabio",
+		Email: "fah_ds@live.com",
+	}
+	responseStream, err := client.AddUserVerbose(context.Background(), req)
+	if err != nil {
+		log.Fatalf("failed to add user: %v", err)
+	}
+	for {
+		stream, err := responseStream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("failed to receive msg: %v", err)
+		}
+		fmt.Println("Status", stream.Status)
+	}
 }
